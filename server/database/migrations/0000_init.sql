@@ -1,51 +1,47 @@
-PRAGMA defer_foreign_keys = on;
+PRAGMA foreign_keys = OFF;
 
--- Students table
-CREATE TABLE `students` (
-  `id` integer PRIMARY KEY NOT NULL,
-  `name` text NOT NULL,
-  `student_id` text NOT NULL,
-  `photo_url` text,
-  `vsa_required` integer DEFAULT 77 NOT NULL,
-  `vsa_max` integer DEFAULT 110 NOT NULL,
-  `bsa_required` integer DEFAULT 147 NOT NULL,
-  `bsa_max` integer DEFAULT 210 NOT NULL
+-- Create tables
+CREATE TABLE IF NOT EXISTS `students` (
+  `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+  `name` TEXT NOT NULL,
+  `student_id` TEXT NOT NULL UNIQUE,
+  `photo_url` TEXT,
+  `vsa_required` INTEGER NOT NULL DEFAULT 77,
+  `vsa_max` INTEGER NOT NULL DEFAULT 110,
+  `bsa_required` INTEGER NOT NULL DEFAULT 147,
+  `bsa_max` INTEGER NOT NULL DEFAULT 210
 );
 
-CREATE UNIQUE INDEX `students_student_id_unique` ON `students` (`student_id`);
-
--- Subjects table
-CREATE TABLE `subjects` (
-  `id` integer PRIMARY KEY NOT NULL,
-  `name` text NOT NULL,
-  `credits` integer,
-  `requirement` text
+CREATE TABLE IF NOT EXISTS `subjects` (
+  `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+  `name` TEXT NOT NULL,
+  `credits` INTEGER,
+  `requirement` TEXT
 );
 
--- Grades table
-CREATE TABLE `grades` (
-  `id` integer PRIMARY KEY NOT NULL,
-  `subject_id` integer NOT NULL,
-  `student_id` integer NOT NULL,
-  `op` integer NOT NULL,
-  `type` text,
-  `grade_type` text NOT NULL,
-  `grade` text NOT NULL,
-  `created_at` integer NOT NULL,
-  FOREIGN KEY (`subject_id`) REFERENCES `subjects`(`id`)
-);
-
--- Presence/Attendance table
-CREATE TABLE `presence` (
-  `id` integer PRIMARY KEY NOT NULL,
-  `student_id` integer NOT NULL,
-  `op` text NOT NULL,
-  `attendance` real NOT NULL,
-  `required` integer DEFAULT 80 NOT NULL,
-  `classes` integer NOT NULL,
-  `present` integer NOT NULL,
-  `updated_at` integer NOT NULL,
+CREATE TABLE IF NOT EXISTS `grades` (
+  `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+  `subject_id` INTEGER NOT NULL,
+  `student_id` INTEGER NOT NULL,
+  `op` INTEGER NOT NULL,
+  `type` TEXT,
+  `grade_type` TEXT NOT NULL,
+  `grade` TEXT NOT NULL,
+  `created_at` INTEGER NOT NULL,
+  FOREIGN KEY (`subject_id`) REFERENCES `subjects`(`id`),
   FOREIGN KEY (`student_id`) REFERENCES `students`(`id`)
 );
 
-PRAGMA defer_foreign_keys = off; 
+CREATE TABLE IF NOT EXISTS `presence` (
+  `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+  `student_id` INTEGER NOT NULL,
+  `op` TEXT NOT NULL,
+  `attendance` REAL NOT NULL,
+  `required` INTEGER NOT NULL DEFAULT 80,
+  `classes` INTEGER NOT NULL,
+  `present` INTEGER NOT NULL,
+  `updated_at` INTEGER NOT NULL,
+  FOREIGN KEY (`student_id`) REFERENCES `students`(`id`)
+);
+
+PRAGMA foreign_keys = ON; 
