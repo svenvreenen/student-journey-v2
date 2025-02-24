@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@directus/sdk':
+        specifier: ^19.0.1
+        version: 19.0.1
       '@nuxthub/core':
         specifier: 0.8.17
         version: 0.8.17(db0@0.2.4(better-sqlite3@11.8.1)(drizzle-orm@0.39.3(@cloudflare/workers-types@4.20250204.0)(better-sqlite3@11.8.1)))(ioredis@5.5.0)(magicast@0.3.5)(vite@6.1.0(@types/node@22.13.4)(jiti@2.4.2)(terser@5.39.0)(yaml@2.7.0))
@@ -208,6 +211,10 @@ packages:
     engines: {node: '>=18'}
     peerDependencies:
       postcss-selector-parser: ^7.0.0
+
+  '@directus/sdk@19.0.1':
+    resolution: {integrity: sha512-6KwWedA/vxrMN2aRm5L52TEgB+42vkz0Ae8kwOitHuBPT4VWtUNOXenzaHnZyXyNrEgh/VBLJ36f3UEe3b/Wfw==}
+    engines: {node: '>=22'}
 
   '@esbuild/aix-ppc64@0.24.2':
     resolution: {integrity: sha512-thpVCb/rhxE/BnMLQ7GReQLLN8q9qbHmI55F4489/ByVg2aQaQ6kbcLb6FHkocZzQhxc4gx0sCk0tJkKBFzDhA==}
@@ -3993,6 +4000,8 @@ snapshots:
   '@csstools/selector-specificity@5.0.0(postcss-selector-parser@7.1.0)':
     dependencies:
       postcss-selector-parser: 7.1.0
+
+  '@directus/sdk@19.0.1': {}
 
   '@esbuild/aix-ppc64@0.24.2':
     optional: true

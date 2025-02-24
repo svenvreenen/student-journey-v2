@@ -14,17 +14,17 @@ export default defineNuxtConfig({
     '@/assets/css/main.css',
     ],
 
-  runtimeConfig: {
+  ssr: false,
 
+  runtimeConfig: {
+    public: {
+      directusUrl: process.env.DIRECTUS_URL || 'https://student-journey-back-bxovn.ondigitalocean.app'
+    }
   },
 
   modules:
     [
       '@nuxtjs/tailwindcss',
     ],
-
-    hub: {
-      database: true
-    }
 
 })

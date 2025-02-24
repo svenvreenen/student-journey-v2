@@ -1,31 +1,35 @@
 <template>
-  <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+  <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:translate-y-[-2px]">
     <div class="flex justify-between items-center mb-2">
       <h4 class="font-semibold text-gray-800">{{ subject.name }}</h4>
-      <span class="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">
+      <span class="text-sm bg-roc-100 text-roc-700 px-2 py-1 rounded">
         {{ subject.period }}
       </span>
     </div>
     <div class="flex justify-between items-center">
-      <span class="text-gray-600">{{ subject.credits }} credits</span>
+      <span class="text-gray-600 flex items-center gap-2">
+        <GraduationCap class="w-4 h-4" />
+        {{ subject.credits }} studiepunten
+      </span>
       <span :class="getGradeClass">
         {{ formatGrade }}
       </span>
     </div>
-    <div v-if="subject.requirement" class="text-sm text-gray-500 mt-2">
-      Required: {{ subject.requirement }}
+    <div v-if="subject.requirement" class="text-sm text-gray-500 mt-2 flex items-center gap-1">
+      <AlertCircle class="w-3 h-3" />
+      Vereist: {{ subject.requirement }}
     </div>
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue';
+import { GraduationCap, AlertCircle } from 'lucide-vue-next';
 
 const LEVEL_GRADES = {
-  DISTINCTION: { value: 'Distinction', score: 8.5, color: 'text-purple-600' },
-  MERIT: { value: 'Merit', score: 7.0, color: 'text-green-600' },
-  PASS: { value: 'Pass', score: 5.5, color: 'text-blue-600' },
-  FAIL: { value: 'Fail', score: 4.0, color: 'text-red-600' }
+  O: { value: 'Onvoldoende', score: 4.0, color: 'text-red-500' },
+  V: { value: 'Voldoende', score: 6.5, color: 'text-green-500' },
+  G: { value: 'Goed', score: 8.0, color: 'text-green-500' }
 };
 
 const props = defineProps({
@@ -35,22 +39,38 @@ const props = defineProps({
     validator: (obj) => {
       return obj && typeof obj === 'object' && 'name' in obj;
     }
+  },
+  grade: {
+    type: Object,
+    default: null
   }
 });
 
 const formatGrade = computed(() => {
-  if (!props.subject.grade) return 'Not graded';
-  if (props.subject.gradeType === 'numeric') {
-    return props.subject.grade.toFixed(1);
+  if (!props.grade) return 'Niet behaald';
+  
+  if (props.grade.gradeType === 'numeric') {
+    const numericGrade = props.grade.grade;
+    if (!numericGrade) return 'Niet behaald';
+    return numericGrade >= 5.5 ? 'Behaald' : 'Niet behaald';
   }
-  return LEVEL_GRADES[props.subject.grade]?.value || 'Invalid grade';
+  
+  // For level grades (O, V, G)
+  if (!props.grade.grade) return 'Niet behaald';
+  return ['V', 'G'].includes(props.grade.grade) ? 'Behaald' : 'Niet behaald';
 });
 
 const getGradeClass = computed(() => {
-  if (!props.subject.grade) return 'text-gray-400';
-  if (props.subject.gradeType === 'numeric') {
-    return props.subject.grade >= 5.5 ? 'font-bold text-green-600' : 'font-bold text-red-600';
+  if (!props.grade?.grade) return 'text-red-500 font-medium';
+  
+  if (props.grade.gradeType === 'numeric') {
+    return props.grade.grade >= 5.5 
+      ? 'font-medium text-green-500' 
+      : 'font-medium text-red-500';
   }
-  return `font-bold ${LEVEL_GRADES[props.subject.grade]?.color || 'text-gray-600'}`;
+  
+  return ['V', 'G'].includes(props.grade.grade)
+    ? 'font-medium text-green-500'
+    : 'font-medium text-red-500';
 });
 </script>
