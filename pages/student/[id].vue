@@ -62,14 +62,23 @@ const route = useRoute()
 const router = useRouter()
 const { token } = useAuth()
 
-// Define VSA credits mapping at the top level
+// Define VSA credits mapping (OP1 and OP2 subjects)
 const vsaCredits = {
   'Unit 13M: Market Research': { OP1: 10, OP2: 10 },
   'Bedrijfseconomie': { OP1: 10, OP2: 10 },
   'Online Marketingplan': { OP2: 10 },
   'Beroepshouding': { OP1: 10, OP2: 10 },
-  'Marketing: Customer Journey': { OP1: 10, OP2: 30 }
+  'Marketing: Customer Journey': { OP1: 10, OP2: 30 },
 };
+
+// Define BSA OP3 subjects
+const op3Subjects = [
+  { name: 'Unit 18: Creative Promotion', credits: 10 },
+  { name: 'Customer Journey', credits: 10 },
+  { name: 'Bedrijfseconomie', credits: 40 },
+  { name: 'Build your webshop', credits: 30 },
+  { name: 'Beroepshouding', credits: 10 },
+];
 
 // Create refs for data
 const directusData = ref(null)
@@ -122,12 +131,13 @@ const studentGrades = computed(() => {
   return gradesData.find(s => s.studentNumber === directusData.value.studentNumber)
 })
 
-// Add these transformation functions
+// Update transformSubjects function to ensure consistent UI for BSA subjects
 function transformSubjects(grades) {
   if (!grades) return []
   
   const uniqueSubjects = new Map()
   
+  // Process existing grades from the database
   grades.forEach(grade => {
     const subjectName = grade.subject.replace(/ P[1-4]$/, '')
     const period = grade.subject.slice(-1)
@@ -142,13 +152,31 @@ function transformSubjects(grades) {
     })
   })
   
+  // Add OP3 subjects with consistent formatting
+  op3Subjects.forEach(subject => {
+    const subjectKey = `${subject.name}-OP3`
+    if (!uniqueSubjects.has(subjectKey)) {
+      uniqueSubjects.set(subjectKey, {
+        id: subjectKey,
+        name: subject.name,
+        credits: subject.credits,
+        period: 'OP3'
+      })
+    } else {
+      // Update credits if the subject already exists
+      const existingSubject = uniqueSubjects.get(subjectKey)
+      existingSubject.credits = subject.credits
+    }
+  })
+  
   return Array.from(uniqueSubjects.values())
 }
 
+// Create attractively formatted grades including OP3
 function transformGrades(grades) {
   if (!grades) return []
   
-  return grades.map(grade => {
+  const transformedGrades = grades.map(grade => {
     const subjectName = grade.subject.replace(/ P[1-4]$/, '')
     const period = parseInt(grade.subject.slice(-1))
     const isVSA = vsaCredits[subjectName]?.[`OP${period}`] > 0
@@ -165,6 +193,25 @@ function transformGrades(grades) {
       ) : null
     }
   })
+  
+  // Add OP3 subjects with nicely formatted empty grades
+  op3Subjects.forEach(subject => {
+    const existingGrade = transformedGrades.find(g => 
+      g.name === subject.name && g.op === 3
+    )
+    
+    if (!existingGrade) {
+      transformedGrades.push({
+        name: subject.name,
+        op: 3,
+        type: 'BSA',
+        gradeType: 'numeric',  // Default to numeric
+        grade: null  // No grade yet
+      })
+    }
+  })
+  
+  return transformedGrades
 }
 
 // Create a function to process student data
@@ -174,11 +221,17 @@ function processStudentData() {
     return
   }
 
-  // Calculate VSA and BSA totals
+  // Calculate VSA total
   const vsaTotal = Object.values(vsaCredits).reduce((sum, periods) => 
     sum + Object.values(periods).reduce((a, b) => a + b, 0), 0)
   
-  const bsaTotal = vsaTotal * 1.5 // Assuming BSA is 150% of VSA requirements
+  // Calculate BSA total (VSA + OP3)
+  const op3Total = op3Subjects.reduce((sum, subject) => sum + subject.credits, 0)
+  const bsaTotal = vsaTotal + op3Total
+
+  // Transform subjects first to ensure we have all OP3 subjects
+  const transformedSubjects = transformSubjects(studentGrades.value.grades)
+  const transformedGrades = transformGrades(studentGrades.value.grades)
 
   const transformed = {
     name: studentGrades.value.name,
@@ -196,8 +249,8 @@ function processStudentData() {
       vsa: directusData.value.mentor_message_vsa || 'Geen bericht beschikbaar',
       bsa: directusData.value.mentor_message_bsa || 'Geen bericht beschikbaar'
     },
-    subjects: transformSubjects(studentGrades.value.grades),
-    grades: transformGrades(studentGrades.value.grades),
+    subjects: transformedSubjects,
+    grades: transformedGrades,
     VSA: {
       max: vsaTotal,
       current: 0, // Will calculate below
@@ -211,12 +264,11 @@ function processStudentData() {
   }
 
   // Calculate VSA and BSA earned credits
-  const grades = transformed.grades
   let vsaEarned = 0
   let bsaEarned = 0
   
-  grades.forEach(grade => {
-    const subject = transformed.subjects.find(s => 
+  transformedGrades.forEach(grade => {
+    const subject = transformedSubjects.find(s => 
       s.name === grade.name && 
       s.period === `OP${grade.op}`
     )
@@ -224,12 +276,26 @@ function processStudentData() {
     if (subject && grade.grade) {
       if (grade.gradeType === 'level') {
         if (['V', 'G'].includes(grade.grade)) {
-          if (grade.type === 'VSA') vsaEarned += subject.credits
-          bsaEarned += subject.credits
+          // For VSA subjects
+          if (grade.op <= 2 && vsaCredits[grade.name]?.[`OP${grade.op}`] > 0) {
+            vsaEarned += subject.credits
+            bsaEarned += subject.credits
+          } 
+          // For BSA-only subjects (OP3)
+          else if (grade.op === 3) {
+            bsaEarned += subject.credits
+          }
         }
       } else if (grade.grade >= 5.5) {
-        if (grade.type === 'VSA') vsaEarned += subject.credits
-        bsaEarned += subject.credits
+        // For VSA subjects
+        if (grade.op <= 2 && vsaCredits[grade.name]?.[`OP${grade.op}`] > 0) {
+          vsaEarned += subject.credits
+          bsaEarned += subject.credits
+        } 
+        // For BSA-only subjects (OP3)
+        else if (grade.op === 3) {
+          bsaEarned += subject.credits
+        }
       }
     }
   })

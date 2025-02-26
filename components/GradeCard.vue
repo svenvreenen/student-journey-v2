@@ -116,8 +116,8 @@
               :key="grade.subjectId" 
               class="flex justify-between items-center p-3 bg-gray-50 rounded-lg hover:bg-indigo-50 transition-colors duration-200"
             >
-              <div class="text-gray-600 flex items-center gap-2">
-                {{ grade.name }}
+              <div class="flex items-center gap-2">
+                <div class="font-medium text-gray-700">{{ grade.name }}</div>
                 <Star v-if="grade.type === 'VSA'" class="w-4 h-4 text-amber-500" title="Onderdeel van VSA" />
               </div>
               <span :class="getGradeStatusClass(grade)">
@@ -151,8 +151,8 @@
               :key="grade.subjectId" 
               class="flex justify-between items-center p-3 bg-gray-50 rounded-lg hover:bg-indigo-50 transition-colors duration-200"
             >
-              <div class="text-gray-600 flex items-center gap-2">
-                {{ grade.name }}
+              <div class="flex items-center gap-2">
+                <div class="font-medium text-gray-700">{{ grade.name }}</div>
                 <Star v-if="grade.type === 'VSA' || grade.type === 'BSA'" class="w-4 h-4 text-amber-500" title="Onderdeel van VSA/BSA" />
               </div>
               <span :class="getGradeStatusClass(grade)">
@@ -235,31 +235,15 @@ const formatGrade = (grade) => {
 
 // Calculate progress
 const calculateProgress = (type) => {
-  const grades = studentProp.value.grades.filter(g => g.type === type);
-  let earned = 0;
-  let total = type === 'VSA' ? studentProp.value.VSA.max : studentProp.value.BSA.max;
+  if (!studentProp.value) return { earned: 0, total: 0, percentage: 0 };
   
-  grades.forEach(grade => {
-    const subject = studentProp.value.subjects.find(s => 
-      s.name === grade.name && 
-      s.period === `OP${grade.op}`
-    );
-    
-    if (subject && grade.grade) {
-      if (grade.gradeType === 'level') {
-        if (['V', 'G'].includes(grade.grade)) {
-          earned += subject.credits;
-        }
-      } else if (grade.grade >= 5.5) {
-        earned += subject.credits;
-      }
-    }
-  });
+  const maxPoints = type === 'VSA' ? studentProp.value.VSA.max : studentProp.value.BSA.max;
+  const earnedPoints = type === 'VSA' ? studentProp.value.VSA.current : studentProp.value.BSA.current;
   
   return {
-    earned,
-    total,
-    percentage: (earned / total) * 100
+    earned: earnedPoints,
+    total: maxPoints,
+    percentage: (earnedPoints / maxPoints) * 100
   };
 };
 
@@ -293,12 +277,33 @@ const getVSASubjects = () => {
 };
 
 const getBSASubjects = () => {
+  if (!studentProp.value) return [];
+  
   return studentProp.value.subjects.filter(subject => {
-    const grade = studentProp.value.grades.find(g => 
-      g.name === subject.name && 
-      `OP${g.op}` === subject.period
-    );
-    return grade && (grade.type === 'BSA' || grade.type === 'VSA');
+    // Include OP3 subjects for BSA
+    if (subject.period === 'OP3') {
+      return true;
+    }
+    
+    // Include VSA subjects (OP1-OP2)
+    const period = parseInt(subject.period.replace('OP', ''));
+    return period <= 2 && subject.credits > 0;
   });
+};
+
+// Check if a subject is passed for the getBSASubjects and getVSASubjects methods
+const isSubjectPassed = (subject) => {
+  const grade = studentProp.value.grades.find(g => 
+    g.name === subject.name && 
+    `OP${g.op}` === subject.period
+  );
+  
+  if (!grade || !grade.grade) return false;
+  
+  if (grade.gradeType === 'level') {
+    return ['V', 'G'].includes(grade.grade);
+  } else {
+    return grade.grade >= 5.5;
+  }
 };
 </script>
