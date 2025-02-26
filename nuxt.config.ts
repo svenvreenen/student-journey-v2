@@ -1,7 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   app: {
     head: {
       link: [
@@ -25,6 +25,8 @@ export default defineNuxtConfig({
   modules:
     [
       '@nuxtjs/tailwindcss',
+      '@pinia/nuxt',
     ],
 
+  // The autoImports config is handled automatically by the module
 })

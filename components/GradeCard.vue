@@ -1,16 +1,26 @@
 <template>
-  <div class="max-w-4xl mx-auto bg-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300">
-    <!-- Header section with ROC gradient -->
-    <div class="bg-gradient-to-r from-roc-500 via-roc-600 to-roc-700 p-8 text-white relative overflow-hidden">
+  <div v-if="!student" class="p-4 text-gray-500 bg-gray-50 rounded-lg">
+    No student data available
+  </div>
+  <div v-else class="max-w-4xl mx-auto bg-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300">
+    <!-- Header section with new gradient -->
+    <div class="bg-gradient-to-r from-indigo-500 via-indigo-600 to-indigo-700 p-8 text-white relative overflow-hidden">
       <!-- Decorative elements -->
       <div class="absolute top-0 right-0 w-40 h-40 bg-white opacity-10 rounded-full -translate-y-20 translate-x-20"></div>
       <div class="absolute bottom-0 left-0 w-32 h-32 bg-white opacity-10 rounded-full translate-y-16 -translate-x-16"></div>
       
+      <!-- Static decorative elements instead of animated emojis -->
+      <div class="absolute top-4 right-4 opacity-20">
+        <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838l-2.727 1.17 1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18v-3.957l1.818.78a3 3 0 002.364 0l2.818-1.208V18a1 1 0 01-1 1H7a1 1 0 01-1-1z"></path>
+        </svg>
+      </div>
+      
       <div class="relative z-10">
         <div class="flex items-start justify-between">
           <div>
-            <h1 class="text-3xl font-bold mb-2 tracking-tight">{{ student.name }}</h1>
-            <p class="text-roc-100 flex items-center gap-2">
+            <h1 class="text-3xl font-bold mb-2 tracking-tight font-heading">{{ student.name }}</h1>
+            <p class="text-indigo-100 flex items-center gap-2 font-body">
               <GraduationCap class="w-4 h-4" />
               Studentnummer: {{ student.studentId }}
             </p>
@@ -28,19 +38,19 @@
     <div class="p-8 space-y-8 bg-gray-50">
       <!-- Attendance section -->
       <div class="bg-white p-6 rounded-xl shadow-md transition-all duration-300 hover:shadow-xl hover:translate-y-[-2px]">
-        <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-roc-500">
+        <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-indigo-600 font-heading">
           <CalendarDays class="w-5 h-5" /> 
           Aanwezigheid Overzicht
         </h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div 
+          <div
             v-for="(data, op) in filteredPresence" 
             :key="op" 
-            class="p-4 bg-white rounded-lg shadow-md border border-gray-100 hover:border-roc-200 transition-all duration-300"
+            class="p-4 bg-white rounded-lg shadow-md border border-gray-100 hover:border-indigo-200 transition-all duration-300 hover:translate-y-[-2px]"
           >
             <div class="flex justify-between items-center mb-2">
-              <span class="font-medium">{{ op }}</span>
-              <span :class="data.attendance >= data.required ? 'text-roc-500' : 'text-roc-gold'">
+              <span class="font-medium font-body">{{ op }}</span>
+              <span :class="data.attendance >= data.required ? 'text-indigo-600' : 'text-amber-500'" class="font-body">
                 {{ data.attendance }}%
               </span>
             </div>
@@ -51,30 +61,27 @@
 
       <!-- Mentor Message - shows based on currentTab -->
       <div class="bg-white p-6 rounded-xl shadow-md transition-all duration-300 hover:shadow-xl hover:translate-y-[-2px]">
-        <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-roc-500">
+        <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-indigo-600 font-heading">
           <MessageCircle class="w-5 h-5" />
           Bericht van je mentor bij {{ currentTab.toUpperCase() }}
         </h2>
-        <p class="text-gray-600 bg-gray-50 p-4 rounded-lg">
-          {{ currentTab === 'vsa' 
-            ? 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
-            : 'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.'
-          }}
+        <p class="text-gray-600 bg-gray-50 p-4 rounded-lg font-body">
+          {{ student.mentorMessages[currentTab] }}
         </p>
       </div>
 
-      <!-- Tabs Navigation -->
-      <div class="bg-white rounded-xl shadow-md p-1">
+      <!-- Tabs Navigation with fancy active state -->
+      <div class="bg-white rounded-xl shadow-md p-1 overflow-hidden">
         <nav class="flex space-x-2" aria-label="Voortgang Tabs">
           <button 
             v-for="tab in tabs" 
             :key="tab.key"
             @click="currentTab = tab.key"
             :class="[
-              'flex-1 px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200',
+              'flex-1 px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 font-body',
               currentTab === tab.key 
-                ? 'bg-roc-500 text-white shadow-md' 
-                : 'text-gray-500 hover:text-roc-500 hover:bg-roc-50'
+                ? 'bg-indigo-600 text-white shadow-md transform scale-105' 
+                : 'text-gray-500 hover:text-indigo-600 hover:bg-indigo-50'
             ]"
           >
             <div class="flex items-center justify-center gap-2">
@@ -91,15 +98,15 @@
         <ProgressSection 
           title="Weg naar VSA (OP1-OP2)" 
           icon="Star" 
+          :progress="vsaProgress.earned" 
           progress-key="VSA" 
-          :progress="vsaProgress" 
           :subjects="getVSASubjects()" 
           class="hover:translate-y-[-2px] transition-transform duration-300"
         />
         
         <!-- VSA Grades Grid -->
         <div v-for="op in [1, 2]" :key="op" class="bg-white p-6 rounded-xl shadow-md transition-all duration-300 hover:shadow-xl hover:translate-y-[-2px]">
-          <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-roc-500">
+          <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-indigo-600 font-heading">
             <CalendarDays class="w-5 h-5" /> 
             OP{{ op }} Cijfers
           </h2>
@@ -107,11 +114,11 @@
             <div 
               v-for="grade in getGradesForOP(op)" 
               :key="grade.subjectId" 
-              class="flex justify-between items-center p-3 bg-gray-50 rounded-lg hover:bg-roc-50 transition-colors duration-200"
+              class="flex justify-between items-center p-3 bg-gray-50 rounded-lg hover:bg-indigo-50 transition-colors duration-200"
             >
               <div class="text-gray-600 flex items-center gap-2">
                 {{ grade.name }}
-                <Star v-if="grade.type === 'VSA'" class="w-4 h-4 text-roc-gold" title="Onderdeel van VSA" />
+                <Star v-if="grade.type === 'VSA'" class="w-4 h-4 text-amber-500" title="Onderdeel van VSA" />
               </div>
               <span :class="getGradeStatusClass(grade)">
                 {{ formatGrade(grade) }}
@@ -126,15 +133,15 @@
         <ProgressSection 
           title="Weg naar BSA (OP1-OP3)" 
           icon="GraduationCap" 
+          :progress="bsaProgress.earned" 
           progress-key="BSA" 
-          :progress="bsaProgress" 
           :subjects="getBSASubjects()" 
           class="hover:translate-y-[-2px] transition-transform duration-300"
         />
         
         <!-- BSA Grades Grid -->
         <div v-for="op in [1, 2, 3]" :key="op" class="bg-white p-6 rounded-xl shadow-md transition-all duration-300 hover:shadow-xl hover:translate-y-[-2px]">
-          <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-roc-500">
+          <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-indigo-600 font-heading">
             <CalendarDays class="w-5 h-5" /> 
             OP{{ op }} Cijfers
           </h2>
@@ -142,11 +149,11 @@
             <div 
               v-for="grade in getGradesForOP(op)" 
               :key="grade.subjectId" 
-              class="flex justify-between items-center p-3 bg-gray-50 rounded-lg hover:bg-roc-50 transition-colors duration-200"
+              class="flex justify-between items-center p-3 bg-gray-50 rounded-lg hover:bg-indigo-50 transition-colors duration-200"
             >
               <div class="text-gray-600 flex items-center gap-2">
                 {{ grade.name }}
-                <Star v-if="grade.type === 'VSA' || grade.type === 'BSA'" class="w-4 h-4 text-roc-gold" title="Onderdeel van VSA/BSA" />
+                <Star v-if="grade.type === 'VSA' || grade.type === 'BSA'" class="w-4 h-4 text-amber-500" title="Onderdeel van VSA/BSA" />
               </div>
               <span :class="getGradeStatusClass(grade)">
                 {{ formatGrade(grade) }}
@@ -160,7 +167,7 @@
 </template>
 
 <script setup>
-import { ref, computed, provide } from 'vue';
+import { ref, computed, provide, onMounted } from 'vue';
 import { ClipboardList, LineChart, Star, GraduationCap, CalendarDays, MessageCircle } from 'lucide-vue-next';
 import StatusBar from './StatusBar.vue';
 import SubjectCard from './SubjectCard.vue'; 
@@ -172,143 +179,43 @@ const LEVEL_GRADES = {
   G: { value: 'Goed', score: 8.0, color: 'text-green-500' }
 };
 
-const GRADE_TYPES = {
-  NUMERIC: 'numeric',
-  LEVEL: 'level'
-};
-
-// Define VSA credits mapping
-const vsaCredits = {
-  'Unit 13M: Market Research': { OP1: 10, OP2: 10 },
-  'Bedrijfseconomie': { OP1: 10, OP2: 10 },
-  'Online Marketingplan': { OP2: 10 },
-  'Beroepshouding': { OP1: 10, OP2: 10 },
-  'Marketing: Customer Journey': { OP1: 10, OP2: 30 }
-};
-
 const props = defineProps({
   student: {
     type: Object,
-    required: true,
-    default: () => ({
-      name: "",
-      studentId: "",
-      photoUrl: null,
-      presence: {
-        OP1: { attendance: 0, required: 80 },
-        OP2: { attendance: 0, required: 80 },
-        OP3: { attendance: 0, required: 80 },
-        OP4: { attendance: 0, required: 80 }
-      },
-      subjects: [],
-      grades: [],
-      VSA: { required: 77, max: 110 },
-      BSA: { required: 147, max: 210 }
-    })
+    required: true
   }
 });
-
-const emit = defineEmits(['update:student']);
 
 // Create a reactive reference to the student data
-const student = computed({
-  get: () => props.student,
-  set: (value) => emit('update:student', value)
-});
+const studentProp = computed(() => props.student);
 
 // Provide the student data to child components
-provide('student', student);
+provide('student', studentProp);
 
-// Helper functions
-const getSubjectName = (subjectId) => {
-  return student.value.subjects.find(s => s.id === subjectId)?.name ?? "Unknown Subject";
+// Add tabs state
+const currentTab = ref('vsa');
+const tabs = [
+  { key: 'vsa', label: 'VSA Voortgang', icon: Star },
+  { key: 'bsa', label: 'BSA Voortgang', icon: GraduationCap },
+];
+
+onMounted(() => {
+  // Initialize any necessary state here
+  console.log('GradeCard mounted with student:', studentProp.value)
+})
+
+// Get grades for a specific period
+const getGradesForOP = (period) => {
+  return studentProp.value.grades.filter(grade => grade.op === period);
 };
-
-const getSubject = (subjectId) => {
-  return student.value.subjects.find(s => s.id === subjectId);
-};
-
-const getGradesForOP = (op) => {
-  const grades = student.value.grades.filter(grade => grade.op === op);
-  return grades.map(grade => {
-    // Find matching subject to get credits
-    const subject = student.value.subjects.find(s => 
-      s.name === grade.name && 
-      s.period === `OP${op}`
-    );
-    
-    return {
-      ...grade,
-      credits: subject?.credits || 0
-    };
-  });
-};
-
-const getVSASubjects = () => {
-  // Only return VSA subjects for the VSA section
-  return student.value.subjects.filter(subject => {
-    const hasOP1Credits = vsaCredits[subject.name]?.OP1 > 0;
-    const hasOP2Credits = vsaCredits[subject.name]?.OP2 > 0;
-    return hasOP1Credits || hasOP2Credits;
-  });
-};
-
-const getBSASubjects = () => {
-  // Return all subjects for BSA section
-  return student.value.subjects;
-};
-
-const getGradeValue = (grade) => {
-  if (!grade) return 0;
-  if (grade.gradeType === GRADE_TYPES.NUMERIC) {
-    return grade.grade;
-  }
-  return LEVEL_GRADES[grade.grade].score;
-};
-
-const calculateProgress = (subjects) => {
-  let total = 0;
-  
-  subjects.forEach(subject => {
-    // Find the grade for this subject and period
-    const period = parseInt(subject.period.replace('OP', ''));
-    const grade = student.value.grades.find(g => 
-      g.name === subject.name && 
-      g.op === period
-    );
-    
-    if (grade && subject.credits) {
-      if (grade.gradeType === GRADE_TYPES.NUMERIC) {
-        if (grade.grade >= 5.5) {
-          total += subject.credits;
-        }
-      } else if (grade.gradeType === GRADE_TYPES.LEVEL) {
-        if (grade.grade === 'V' || grade.grade === 'G') {
-          total += subject.credits;
-        }
-      }
-    }
-  });
-  
-  return total;
-};
-
-// Computed properties
-const vsaProgress = computed(() => calculateProgress(getVSASubjects()));
-const bsaProgress = computed(() => calculateProgress(getBSASubjects()));
 
 const getGradeStatusClass = (grade) => {
   if (!grade || !grade.grade) return 'text-gray-600 font-medium';
   
   const baseClasses = 'font-medium';
   
-  if (grade.gradeType === GRADE_TYPES.LEVEL) {
-    // Check if the grade level exists in LEVEL_GRADES
+  if (grade.gradeType === 'level') {
     return `${baseClasses} ${LEVEL_GRADES[grade.grade]?.color || 'text-gray-600'}`;
-  }
-  
-  if (grade.grade === null || grade.grade === undefined) {
-    return `${baseClasses} text-gray-600`;
   }
   
   return grade.grade >= 5.5 ? 
@@ -319,27 +226,49 @@ const getGradeStatusClass = (grade) => {
 const formatGrade = (grade) => {
   if (!grade || grade.grade === null || grade.grade === undefined) return 'N/A';
   
-  if (grade.gradeType === GRADE_TYPES.LEVEL) {
+  if (grade.gradeType === 'level') {
     return LEVEL_GRADES[grade.grade]?.value || 'N/A';
   }
   
-  if (grade.gradeType === GRADE_TYPES.NUMERIC) {
-    return grade.grade.toFixed(1);
-  }
-  
-  return 'N/A';
+  return grade.grade.toFixed(1);
 };
 
-// Add tabs state
-const currentTab = ref('vsa');
-const tabs = [
-  { key: 'vsa', label: 'VSA Voortgang', icon: Star },
-  { key: 'bsa', label: 'BSA Voortgang', icon: GraduationCap },
-];
+// Calculate progress
+const calculateProgress = (type) => {
+  const grades = studentProp.value.grades.filter(g => g.type === type);
+  let earned = 0;
+  let total = type === 'VSA' ? studentProp.value.VSA.max : studentProp.value.BSA.max;
+  
+  grades.forEach(grade => {
+    const subject = studentProp.value.subjects.find(s => 
+      s.name === grade.name && 
+      s.period === `OP${grade.op}`
+    );
+    
+    if (subject && grade.grade) {
+      if (grade.gradeType === 'level') {
+        if (['V', 'G'].includes(grade.grade)) {
+          earned += subject.credits;
+        }
+      } else if (grade.grade >= 5.5) {
+        earned += subject.credits;
+      }
+    }
+  });
+  
+  return {
+    earned,
+    total,
+    percentage: (earned / total) * 100
+  };
+};
+
+const vsaProgress = computed(() => calculateProgress('VSA'));
+const bsaProgress = computed(() => calculateProgress('BSA'));
 
 // Filter presence data based on current tab
 const filteredPresence = computed(() => {
-  const presence = student.value.presence;
+  const presence = studentProp.value.presence;
   const allowedPeriods = currentTab.value === 'vsa' 
     ? ['OP1', 'OP2']
     : ['OP1', 'OP2', 'OP3'];
@@ -351,4 +280,25 @@ const filteredPresence = computed(() => {
       return acc;
     }, {});
 });
+
+// Add these new methods
+const getVSASubjects = () => {
+  return studentProp.value.subjects.filter(subject => {
+    const grade = studentProp.value.grades.find(g => 
+      g.name === subject.name && 
+      `OP${g.op}` === subject.period
+    );
+    return grade && grade.type === 'VSA';
+  });
+};
+
+const getBSASubjects = () => {
+  return studentProp.value.subjects.filter(subject => {
+    const grade = studentProp.value.grades.find(g => 
+      g.name === subject.name && 
+      `OP${g.op}` === subject.period
+    );
+    return grade && (grade.type === 'BSA' || grade.type === 'VSA');
+  });
+};
 </script>

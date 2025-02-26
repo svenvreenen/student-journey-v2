@@ -1,21 +1,21 @@
 <template>
-  <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:translate-y-[-2px]">
+  <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 hover:translate-y-[-2px] hover:bg-indigo-50/30">
     <div class="flex justify-between items-center mb-2">
-      <h4 class="font-semibold text-gray-800">{{ subject.name }}</h4>
-      <span class="text-sm bg-roc-100 text-roc-700 px-2 py-1 rounded">
+      <h4 class="font-semibold text-gray-800 font-heading">{{ subject.name }}</h4>
+      <span class="text-sm bg-indigo-100 text-indigo-700 px-2 py-1 rounded font-body">
         {{ subject.period }}
       </span>
     </div>
     <div class="flex justify-between items-center">
-      <span class="text-gray-600 flex items-center gap-2">
+      <span class="text-gray-600 flex items-center gap-2 font-body">
         <GraduationCap class="w-4 h-4" />
         {{ subject.credits }} studiepunten
       </span>
-      <span :class="getGradeClass">
+      <span :class="getGradeClass" class="font-body">
         {{ formatGrade }}
       </span>
     </div>
-    <div v-if="subject.requirement" class="text-sm text-gray-500 mt-2 flex items-center gap-1">
+    <div v-if="subject.requirement" class="text-sm text-gray-500 mt-2 flex items-center gap-1 font-body">
       <AlertCircle class="w-3 h-3" />
       Vereist: {{ subject.requirement }}
     </div>

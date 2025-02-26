@@ -33,13 +33,13 @@ const progressPercentage = computed(() => Math.min((props.value / props.max) * 1
 
 const colorClass = computed(() => {
   if (props.type === 'presence') {
-    if (progressPercentage.value >= 80) return 'bg-roc-500';
-    if (progressPercentage.value >= 70) return 'bg-roc-gold';
+    if (progressPercentage.value >= 80) return 'bg-indigo-600';
+    if (progressPercentage.value >= 70) return 'bg-amber-500';
     return 'bg-red-500';
   }
-  // Default progress colors with ROC theme
-  if (progressPercentage.value >= 80) return 'bg-roc-500';
-  if (progressPercentage.value >= 60) return 'bg-roc-300';
-  return 'bg-roc-200';
+  // Default progress colors with indigo theme
+  if (progressPercentage.value >= 80) return 'bg-indigo-600';
+  if (progressPercentage.value >= 60) return 'bg-indigo-400';
+  return 'bg-indigo-300';
 });
 </script>
